@@ -37,7 +37,7 @@ fetch("/article/all").then((response) => {
 
 
   fetch("/article/all").then((response) => {
-    reponse.json().then((data) => {
+    response.json().then((data) => {
         //Selectionner la div qui va recevoir les articles
         let divArticles = document.getElementById("articles");
 
@@ -65,5 +65,100 @@ fetch("/article/all").then((response) => {
 
 //2. Dans la front-end: script.js:
 // 2.1 Ajouter un bouton pour chaque article
-// 2.2 Dans l'event listener, envoyer un requete GET vers /article/delete/:position
+// 2.2 Dans l'event listener, envoyer une requete GET vers /article/delete/:position
 // 2.3 Acualiser la liste des articles dans la page web
+
+// let articleBtn = getElementById("addArticle").addEventListener("click", (e) => {
+//     e.preventDefault();
+
+//     let myTitle = document.getElementById("title");
+//     let myContent = document.getElementById("content");
+
+//     let myUrl = fetch('/article/delete/:position', {
+//         method: 'GET',
+//         headers: {
+//           'Content-Type': 'application/json;charset=utf-8',
+//         },
+//         body: JSON.stringify({title: myTitle, content: myContent}),
+//       });
+    
+// });//à corriger
+
+//Bonne version : 
+// function afficheArticles(articles) {
+//     //Selectionner la div qui va recevoir les articles
+//     let divArticles = document.getElementById("articles");
+
+//     divArticles.innerHTML = "";
+
+//     //Boucler sur le tableau pour ajouter les articles dans la div
+//     articles.forEach((article, position) => {
+//         const title = document.createElement("h2");
+//         title.textContent = article.title;
+
+//         const content = document.createElement("p");
+//         content.textContent = article.content;
+
+//         const button = document.createElement("button");
+//         button.textContent = "Supprimer";
+//         button.addEventListener("click", () => {
+//             fetch("/article/delete/" + position).then((reponse) => {
+//                 reponse.json().then((data) => {
+//                     afficheArticles(data.articles);
+//                 });
+//             });
+//         });
+
+//         divArticles.append(title, content, button);
+//     });
+// }
+
+//Avec mongoDB :
+function afficheArticles(articles) {
+    //Selectionner la div qui va recevoir les articles
+    let divArticles = document.getElementById("articles");
+
+    divArticles.innerHTML = "";
+
+    //Boucler sur le tableau pour ajouter les articles dans la div
+    articles.forEach((article, position) => {
+        const title = document.createElement("h2");
+        title.textContent = article.title;
+
+        const content = document.createElement("p");
+        content.textContent = article.content;
+
+        const button = document.createElement("button");
+        button.textContent = "Supprimer";
+        button.addEventListener("click", () => {
+            fetch("/article/delete/" + article._id).then((reponse) => {
+                //"position" à été remplacé par "article._id" à cause de la requête 
+                //"await Article.findByIdAndDelete(requestData.id) dans la partie server.js".
+                reponse.json().then((data) => {
+                    afficheArticles(data.articles);
+                });
+            });
+        });
+
+        divArticles.append(title, content, button);
+    });
+}
+
+
+// fonction callback (information supplémentaire)
+function myForEach(tableau, callback) {
+    for (let i = 0; i < tableau.length; i++) {
+        callback(tableau[i], i, tableau);
+    }
+}
+
+myForEach(["PHP", "JS", "CSS"], (element, position, tab) => {
+    console.log(element, " ", position);
+});
+
+let divArticles = document.getElementById("articles");
+myForEach(["PHP", "JS", "CSS"], (element) => {
+    let p = document.createElement("p");
+    p.textContent = element;
+    divArticles.append(p);
+});

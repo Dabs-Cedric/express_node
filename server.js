@@ -2,9 +2,11 @@ import express from "express";
 import bodyParser from "body-parser";
 import morgan from "morgan";
 import fs from "fs";
+import mongoose from "mongoose";
+
 
 const app = express();
-
+const mongoUrl = "mongodb://127.0.0.1:27017/articles";
 
 //Middleware pour la donnée dans le body de la requête
 app.use(bodyParser.urlencoded({extended: true}));
@@ -24,9 +26,106 @@ app.use(express.static("public"));
 
 const port = 5000;
 
+mongoose.connect(mongoUrl)
+.then((data) => {
+    console.log("connected to DB");
+    //lancement du serveur (pour rendre son lancement plus rapide dans mongo db.)
+    app.listen(port, ()=>{console.log(`Serveur lancé sur le port ${port}`);});
+})
+.catch((err) => {
+    console.log("Not connected to DB");
+});
 app.get("/", (req,res) => {
     res.end("<h1>Bonjour</h1>");
 });
+
+// Les schémas
+const articleSchema = mongoose.Schema({
+    title:{
+        type: String,
+        required: true,
+    },
+    content: String,
+});
+
+// Creation de model
+const Article = mongoose.model("Article", articleSchema);
+
+// Les controlleurs
+
+// 1ère méthode
+// function postArticle(req,res) {
+//     const newArticle = req.body;
+//     let article = Article.create
+//     ({title: 
+//         newArticle.title, 
+//         content: newArticle.content,}).then(() => {
+//             Article.find().then((data) => {
+//                 console.log(data);
+//                 res.json({articles: data});
+//             }) ;
+//     })
+    
+// }
+
+async function postArticle(req,res) {
+    const newArticle = req.body;
+//fonction "créer" une donnée
+    await Article.create({ //await permet de s'arrêter sur la fonction sur la 1ère étape de la fonction
+        // pour l'éxecuter et ensuite passr à l'étape suivante.
+        title: newArticle.title,
+        content: newArticle.content,
+    });
+
+// fonction " trouver et lire" une donnée
+    const articles = await Article.find();
+    res.json({articles: articles});
+} // 2ème méthode simplifiée
+
+async function getArticles(req,res) {
+    res.json({articles: await Article.find()});
+} // 3ème méthode plus simlifiée
+
+//fonction effacer une donnée
+async function deleteArticle(req,res) {
+    // Récupérer les données de la requête
+    const requestData = req.params;
+    await Article.findByIdAndDelete(requestData.id);
+    res.json({articles: await Article.find()});
+}
+
+const catSchema = mongoose.Schema({
+    nom:{
+        type: String,
+        required: true,
+    },
+    content: String,
+    couleur:{
+        type: String
+    },
+    age:{
+      type: String,  
+    }
+});
+
+const Mycat = mongoose.model("Mycat", catSchema);
+
+async function postCat(req,res){
+    const newCat = req.body;
+
+    await Chat.create({
+        nom: newCat.nom,
+        couleur: newCat.couleur,
+        age: newCat.age,
+    })
+}
+
+async function getChats(req,res) {
+    const animaux = await Chat.find();
+    res.json({})
+}
+
+
 
 // app.get("/speak/dog", (req,res) => {
 //     res.end("Le chien dit 'woof woof'");
@@ -115,15 +214,15 @@ app.post("/article", (req,res) => {
     
 app.post("/article/add", postArticle);
 
-function postArticle(req, res) {
-    const newArticle = req.body;
-    fs.readFile('./articles/articles.json', (err, data) => {
-        const articles = JSON.parse(data);
-        articles.articles.push(newArticle);
-        fs.writeFileSync("./articles/articles.json", JSON.stringify(articles));
-        res.json(articles);
-      });
-    }
+// function postArticle(req, res) {
+//     const newArticle = req.body;
+//     fs.readFile('./articles/articles.json', (err, data) => {
+//         const articles = JSON.parse(data);
+//         articles.articles.push(newArticle);
+//         fs.writeFileSync("./articles/articles.json", JSON.stringify(articles));
+//         res.json(articles);
+//       });
+//     }
 
 
 // function logger(req, rep, next) {
@@ -161,17 +260,22 @@ function articleAll(req, res) {
 // 2.2 Dans l'event listener, envoyer un requete GET vers /article/delete/:position
 // 2.3 Acualiser la liste des articles dans la page web
 
-app.get("./article/delete/:position", );
+app.get("/article/delete/:position", deleteArticle );
 
-function deleteArticle(req, res) {
-    fs.readFile('./articles/articles.json', (err, data) => {
-        const articlesdel = JSON.parse(data);
-        res.json(articlesall);
-      });
-    }
+// function deleteArticle(req, res) {
+//     const post = req.params;
+//     fs.readFile('./articles/articles.json', (err, data) => {
+//         const articlesdel = JSON.parse(data);
+//         articlesdel.articles.splice(post)[1];
+//         fs.writeFileSync("./articles/articles.json", JSON.stringify(articlesdel))
+//         res.json(articlesdel);
+//       });
+//     }// voir discord
 
 //Première méthode: app.listen(5000, ()=>{console.log("Serveur lancé sur le port 5000 !");});
-app.listen(port, ()=>{console.log(`Serveur lancé sur le port ${port}`);});
+// app.listen(port, ()=>{console.log(`Serveur lancé sur le port ${port}`);});
+// Replacé dans la partie de mongo DB
+
 
 
 
