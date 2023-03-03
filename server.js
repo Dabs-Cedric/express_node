@@ -3,6 +3,7 @@ import bodyParser from "body-parser";
 import morgan from "morgan";
 import fs from "fs";
 import mongoose from "mongoose";
+import { articlesRouter } from "./src/routes/articles.js";
 
 
 const app = express();
@@ -39,6 +40,21 @@ app.get("/", (req,res) => {
     res.end("<h1>Bonjour</h1>");
 });
 
+//les routes
+
+app.post("/article/add", postArticle);
+app.get("/article/all", getArticles);
+app.get("/article/delete/:id", deleteArticle);
+
+app.post("/cats/add", createCat);
+app.get("/cats", getCats);
+app.get("/cats/:id", getCat);
+app.put("/cats/:id", updateCat);
+app.delete("/cats/:id", removeCat);
+
+
+app.use("/article", articlesRouter);// placer le mot "/article" permet, dans la partie "routes/articles.js" de réécrire dans les urls le mot "article".
+
 // Les schémas
 const articleSchema = mongoose.Schema({
     title:{
@@ -68,6 +84,9 @@ const Article = mongoose.model("Article", articleSchema);
     
 // }
 
+
+
+//Placé dans controllers
 async function postArticle(req,res) {
     const newArticle = req.body;
 //fonction "créer" une donnée
