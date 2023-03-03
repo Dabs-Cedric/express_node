@@ -84,7 +84,7 @@ async function postArticle(req,res) {
 
 async function getArticles(req,res) {
     res.json({articles: await Article.find()});
-} // 3ème méthode plus simlifiée
+} // 3ème méthode plus simplifiée
 
 //fonction effacer une donnée
 async function deleteArticle(req,res) {
